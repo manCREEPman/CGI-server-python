@@ -4,49 +4,28 @@ import os
 import json
 import sys
 
-connection = sqlite3.connect('./cgi-bin/music_genres.db')
-cursor = connection.cursor()
-
 
 def form_values_str(response_dict, mode=1):
     result_str = ''
-    if mode == 1:
-        values = response_dict['data']
-        for i in range(len(values)):
-            if isinstance(values[i], int):
-                result_str += str(values[i])
-            elif isinstance(values[i], str):
-                result_str += '\'' + values[i] + '\''
-            if i != len(values) - 1:
-                result_str += ', '
-    elif mode == 2:
-        columns = response_dict['columns']
-        for i in range(len(columns)):
-            result_str += str(columns[i])
-            if i != len(columns) - 1:
-                result_str += ', '
-    return result_str
-
-
-if os.environ['REQUEST_METHOD'] == 'POST':
-    content_len = os.environ.get('CONTENT_LENGTH', '0')
-    body = sys.stdin.read(int(content_len))
-    data = json.loads(body)
+    source_list = []
     try:
-        table_name = data['table_name']
-        columns_str = form_values_str(data['columns'], mode=2)
-        values_str = form_values_str(data['values'])
-    except:
-    
-    print("Content-type: application/json\n")
-    query_str = 'INSERT INTO {}({}) VALUES({});'.format(data['table_name'], columns_str, values_str)
+        if mode == 1:
+            source_list = response_dict['data']
+        elif mode == 2:
+            source_list = response_dict['columns']
+        for i in range(len(source_list)):
+            result_str += '\'' + source_list[i] + '\'' if isinstance(source_list[i], str) and mode == 1 \
+                        else str(source_list[i])
+            if i != len(source_list) - 1:
+                result_str += ', '
+    finally:
+        return result_str
 
-    print(data)
 
-elif os.environ['REQUEST_METHOD'] == 'GET':
+def get_query_handler(cursor):
     request = cgi.FieldStorage(encoding='utf-8')
     table_name = request.getfirst('table_name', '')
-    print("Content-type: application/json\n")
+    response = 'Content-type: application/json\n'
     if table_name != '':
         query = 'SELECT * FROM {};'.format(table_name)
         cursor.execute(query)
@@ -56,8 +35,29 @@ elif os.environ['REQUEST_METHOD'] == 'GET':
             for column in query_row:
                 column_list.append(column)
             response['data'].append(column_list)
-        print(json.dumps(response))
+        response += json.dumps(response)
     else:
-        print(json.dumps({'error': 'Table is not exists.'}))
+        response += json.dumps({'error': 'Table is not exists.'})
+
+
+def post_query_handler(cursor):
+    content_len = os.environ.get('CONTENT_LENGTH', '0')
+    body = sys.stdin.read(int(content_len))
+    data = json.loads(body)
+    try:
+        table_name = data['table_name']
+        columns_str = form_values_str(data['columns'], mode=2)
+        values_str = form_values_str(data['values'])
+    finally:
+        pass
+
+    response = 'Content-type: application/json\n'
+    query_str = 'INSERT INTO {}({}) VALUES({});'.format(data['table_name'], columns_str, values_str)
+
+    response += str(data)
+
+
+connection = sqlite3.connect('./cgi-bin/music_genres.db')
+connection_cursor = connection.cursor()
 
 connection.close()
