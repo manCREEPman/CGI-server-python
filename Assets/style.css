@@ -1,0 +1,18 @@
+body{
+    background-color: #727262;
+}
+
+.table-title{
+    display: inline-block;
+    padding: 15px 10px;
+    border: 1px solid #000000;
+}
+
+.table-title:hover{
+    background-color: #66665e;
+}
+
+.table-title-chosen{
+    border: none;
+    background-color: #d3d3ba;
+}
