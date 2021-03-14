@@ -69,7 +69,7 @@ def data_insertion(cursor, json_query):
                     query_str = 'INSERT INTO {0}({1}, {2}) VALUES({3}, {4});' \
                         .format(table_name, columns_str, 'artist_id', values_str, str(artist_id))
                 else:
-                    return form_titled_json('status', 'Error: This artist doesn\'t exist in database.')
+                    return 'Error: This artist doesn\'t exist in database.'
             elif table_name == 'Composition':
                 album_id = get_pk_from_table_by_name(cursor, 'Album', json_query['album_name'])
                 genre_id = get_pk_from_table_by_name(cursor, 'Music_genre', json_query['genre_name'])
@@ -78,19 +78,35 @@ def data_insertion(cursor, json_query):
                         .format(table_name, columns_str, 'album_id',
                                 'genre_id', values_str, str(album_id), str(genre_id))
                 else:
-                    return form_titled_json('status', 'Error: Some of values don\'t exist in database.')
+                    return 'Error: Some of values don\'t exist in database.'
     except KeyError:
-        return form_titled_json('status', 'Error: Wrong arguments got.')
+        return 'Error: Wrong arguments got.'
     cursor.execute(query_str)
-    return form_titled_json('status', 'The data successfully inserted.')
+    return 'The data successfully inserted.'
 
 
-def post_query_handler(cursor):
+def last_data_inserted(cursor, data):
+    try:
+        table_name = data['table_name']
+        table_field = 'genre_id' if table_name == 'Music_genre' else table_name.lower() + '_id'
+        cursor.execute('SELECT * FROM {0} where {1} = (select max({1}) from {0});'.format(table_name, table_field))
+        result = cursor.fetchone()
+        if result is not None:
+            return [item for item in result]
+    except KeyError:
+        return []
+
+
+def post_query_handler(cursor, connection):
     content_len = os.environ.get('CONTENT_LENGTH', '0')
     body = sys.stdin.read(int(content_len))
     data = json.loads(body)
+    json_response = {}
     response = 'Content-type: application/json\n'
-    response += data_insertion(cursor, data)
+    json_response['status'] = data_insertion(cursor, data)
+    json_response['new_data'] = last_data_inserted(cursor, data)
+    connection.commit()
+    response += json.dumps(json_response)
     return response
 
 
@@ -104,11 +120,19 @@ data1 = {
     'values': ['Pashkovka', 'Ssanina', '13.02.2021'],
     'artist_name': 'Local Memes'
 }
+data2 = {
+    'table_name': 'Music_genre',
+    'columns': ['genre_name', 'genre_description'],
+    'values': ['Pash-rap', 'Ssanina'],
+    'artist_name': 'Local Memes'
+}
 # table_name = 'Album'
 # columns = ['album_name', 'album_desc', 'album_release_date', 'artist_name']
 # values = ['Pashkovka', 'Ssanina', '13.02.2021', 'Local Memes']
 # print(data_insertion(connection_cursor, table_name, columns, values))
-# connection_cursor.execute('SELECT artist_id FROM Artist WHERE artist_name = \'Local Memes\';')
+# connection_cursor.execute('SELECT * FROM Artist WHERE artist_name = \'Local Memes\';')
 # print(connection_cursor.fetchone())
-print(data_insertion(connection_cursor, data1))
+print(data_insertion(connection_cursor, data2))
+print(last_data_inserted(connection_cursor, data2))
+connection.commit()
 connection.close()
