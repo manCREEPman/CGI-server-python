@@ -5,25 +5,20 @@ import json
 import sys
 
 
-def form_values_str(response_dict, mode=1):
+def form_values_str(source_list, mode=1):
     result_str = ''
-    source_list = []
     try:
-        if mode == 1:
-            source_list = response_dict['data']
-        elif mode == 2:
-            source_list = response_dict['columns']
         for i in range(len(source_list)):
             result_str += '\'' + source_list[i] + '\'' if isinstance(source_list[i], str) and mode == 1 \
-                        else str(source_list[i])
+                else str(source_list[i])
             if i != len(source_list) - 1:
                 result_str += ', '
     finally:
         return result_str
 
 
-def form_error_json(message):
-    return json.dumps({'error': message})
+def form_titled_json(title, message):
+    return json.dumps({title: message})
 
 
 def get_query_handler(cursor):
@@ -41,39 +36,53 @@ def get_query_handler(cursor):
             response['data'].append(column_list)
         response += json.dumps(response)
     else:
-        response += form_error_json('Table is not exists.')
+        response += form_titled_json('status', 'Error: Table is not exists.')
     return response
 
 
-def get_id_by_name(cursor, table_name :str, name):
-    field = table_name.lower() + '_id'
-    cursor.execute('SELECT {0} from {1} WHERE {0} = \'{2}\';'.format(field, table_name, name))
-    retrieved_id = cursor.fetchone()[0]
+def get_pk_from_table_by_name(cursor, table_name, name):
+    target = 'genre_id' if table_name == 'Music_genre' else table_name.lower() + '_id'
+    table_field = 'genre_name' if table_name == 'Music_genre' else table_name.lower() + '_name'
+    query_str = 'SELECT {0} FROM {1} WHERE {2} = \'{3}\''.format(target, table_name, table_field, name)
+    cursor.execute(query_str)
+    retrieved_id = cursor.fetchone()
     if retrieved_id is not None:
-        return retrieved_id
+        return retrieved_id[0]
     else:
         return -1
 
 
-def data_insertion(cursor, table_name, columns, values):
-    query_structure = {}
-    columns_str = form_values_str(columns, mode=2)
-    values_str = form_values_str(values)
-    query_str = ''
-    for i in range(len(columns)):
-        query_structure[columns[i]] = values[i]
-    if table_name in ['Artist', 'Music_genre']:
-        query_str = 'INSERT INTO {}({}) VALUES({});'.format(table_name, columns_str, values_str)
-    else:
-        target = table_name.lower()
-        target_id = get_id_by_name(cursor, table_name, query_structure[target + '_name'])
-        if target_id != -1:
-            query_str = 'INSERT INTO {}({}, artist_id) VALUES({}, {});'\
-                .format(table_name, columns_str, values_str, str(target_id))
+def data_insertion(cursor, json_query):
+    try:
+        table_name = json_query['table_name']
+        columns = json_query['columns']
+        values = json_query['values']
+        columns_str = form_values_str(columns, mode=2)
+        values_str = form_values_str(values)
+        query_str = ''
+        if table_name in ['Artist', 'Music_genre']:
+            query_str = 'INSERT INTO {}({}) VALUES({});'.format(table_name, columns_str, values_str)
         else:
-            return 'This {} doesn\'t exist in database.'.format(target)
+            if table_name == 'Album':
+                artist_id = get_pk_from_table_by_name(cursor, 'Artist', json_query['artist_name'])
+                if artist_id != -1:
+                    query_str = 'INSERT INTO {0}({1}, {2}) VALUES({3}, {4});' \
+                        .format(table_name, columns_str, 'artist_id', values_str, str(artist_id))
+                else:
+                    return form_titled_json('status', 'Error: This artist doesn\'t exist in database.')
+            elif table_name == 'Composition':
+                album_id = get_pk_from_table_by_name(cursor, 'Album', json_query['album_name'])
+                genre_id = get_pk_from_table_by_name(cursor, 'Music_genre', json_query['genre_name'])
+                if genre_id != -1 and album_id != -1:
+                    query_str = 'INSERT INTO {0}({1}, {2}, {3}) VALUES({4}, {5}, {6});' \
+                        .format(table_name, columns_str, 'album_id',
+                                'genre_id', values_str, str(album_id), str(genre_id))
+                else:
+                    return form_titled_json('status', 'Error: Some of values don\'t exist in database.')
+    except KeyError:
+        return form_titled_json('status', 'Error: Wrong arguments got.')
     cursor.execute(query_str)
-    return 'The data successfully inserted.'
+    return form_titled_json('status', 'The data successfully inserted.')
 
 
 def post_query_handler(cursor):
@@ -81,21 +90,25 @@ def post_query_handler(cursor):
     body = sys.stdin.read(int(content_len))
     data = json.loads(body)
     response = 'Content-type: application/json\n'
-    try:
-        table_name = data['table_name']
-        columns = data['columns']
-        values = data['values']
-
-    except KeyError:
-        response += form_error_json('Wrong arguments got.')
-        return response
-
-    response += str(data)
+    response += data_insertion(cursor, data)
     return response
 
 
-connection = sqlite3.connect('./cgi-bin/music_genres.db')
+connection = sqlite3.connect('music_genres.db')
 connection_cursor = connection.cursor()
-connection_cursor.execute('SELECT artist_id from Artist WHERE artist_name = \'{}\';'.format('debil'))
-print(connection_cursor.fetchone())
+# connection_cursor.execute('SELECT artist_id from Artist WHERE artist_name = \'{}\';'.format('debil'))
+# print(connection_cursor.fetchone())
+data1 = {
+    'table_name': 'Album',
+    'columns': ['album_name', 'album_desc', 'album_release_date'],
+    'values': ['Pashkovka', 'Ssanina', '13.02.2021'],
+    'artist_name': 'Local Memes'
+}
+# table_name = 'Album'
+# columns = ['album_name', 'album_desc', 'album_release_date', 'artist_name']
+# values = ['Pashkovka', 'Ssanina', '13.02.2021', 'Local Memes']
+# print(data_insertion(connection_cursor, table_name, columns, values))
+# connection_cursor.execute('SELECT artist_id FROM Artist WHERE artist_name = \'Local Memes\';')
+# print(connection_cursor.fetchone())
+print(data_insertion(connection_cursor, data1))
 connection.close()
