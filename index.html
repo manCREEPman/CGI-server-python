@@ -5,42 +5,22 @@
     <title>Музыкальные жанры</title>
     <link rel="stylesheet" href="./Assets/style.css">
 </head>
-<script>
-    async function test(){
-        // let response = await fetch('/cgi-bin/genre_insertion.py?table_name=Artist')
-        // const data = {
-        //     table_name: 'Artist',
-        //     columns: [1, '2', 3],
-        //     data: ['asdf', 12, 'typ']
-        // }
-        // let response = await fetch('/cgi-bin/genre_insertion.py',
-        // {
-        //     method: 'POST',
-        //     headers: {
-        //         'Content-Type': 'application/json'
-        //     },
-        //     body: JSON.stringify(data),
-        // })
-        let response = await fetch('/cgi-bin/genre_insertion.py?table_name=Composition')
-        console.log(response)
-        console.log(response.text())
-        console.log(response.status)
-        console.log(response.json)
-    }
-</script>
 <body>
-    <!-- <div class="nav-bar">
-        <div id="nav1" class="table-title-chosen table-title">Музыкальный жанр</div>
+    <div class="nav-bar">
+        <div id="nav1" class="table-title">Музыкальный жанр</div>
         <div id="nav2" class="table-title">Исполнитель</div>
         <div id="nav3" class="table-title">Альбом</div>
         <div id="nav4" class="table-title">Композиция</div>
     </div>
-    <div>
+    <script src="./Assets/script.js"></script>
+    <div class="segment-container">
+        <div id="selected-form">
+        </div>
+        <div id="selected-table">
+            <table id="content-table">
+            </table>
+        </div>
     </div>
-    <div>
-        <table id="content-table">
-        </table>
-    </div> -->
     <input type="button" value="Click" onclick="test()">
 </body>
 </html>

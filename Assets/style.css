@@ -1,18 +1,26 @@
+:root{
+    --title-bg-color: #727262;
+    --title-bg-color-chosen: #d3d3ba;
+    --title-border: 1px solid #000000;
+    --title-border-chosen: 1px solid #d3d3ba;
+}
+
 body{
-    background-color: #727262;
+    background-color: #66665e;
 }
 
 .table-title{
     display: inline-block;
+    background-color: var(--title-bg-color);
     padding: 15px 10px;
-    border: 1px solid #000000;
+    border: var(--title-border);
 }
 
 .table-title:hover{
-    background-color: #66665e;
+    background-color: var(--title-bg-color-chosen);
 }
 
 .table-title-chosen{
-    border: none;
-    background-color: #d3d3ba;
+    border: var(--title-border-chosen);
+    background-color: var(--title-bg-color-chosen);
 }
