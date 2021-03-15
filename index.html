@@ -8,22 +8,24 @@
 <script>
     async function test(){
         // let response = await fetch('/cgi-bin/genre_insertion.py?table_name=Artist')
-        const data = {
-            table_name: 'Artist',
-            columns: [1, '2', 3],
-            data: ['asdf', 12, 'typ']
-        }
-        let response = await fetch('/cgi-bin/genre_insertion.py',
-        {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data),
-        })
+        // const data = {
+        //     table_name: 'Artist',
+        //     columns: [1, '2', 3],
+        //     data: ['asdf', 12, 'typ']
+        // }
+        // let response = await fetch('/cgi-bin/genre_insertion.py',
+        // {
+        //     method: 'POST',
+        //     headers: {
+        //         'Content-Type': 'application/json'
+        //     },
+        //     body: JSON.stringify(data),
+        // })
+        let response = await fetch('/cgi-bin/genre_insertion.py?table_name=Composition')
         console.log(response)
         console.log(response.text())
         console.log(response.status)
+        console.log(response.json)
     }
 </script>
 <body>
