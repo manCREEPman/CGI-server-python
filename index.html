@@ -12,15 +12,20 @@
         <div id="nav3" class="table-title">Альбом</div>
         <div id="nav4" class="table-title">Композиция</div>
     </div>
-    <script src="./Assets/script.js"></script>
+    <form action="/cgi-bin/genre_insertion.py?table_name=Artist">
+        <input type="submit">
+    </form>
     <div class="segment-container">
         <div id="selected-form">
+            content
         </div>
-        <div id="selected-table">
+        <div id="selected-table-space">
             <table id="content-table">
             </table>
         </div>
     </div>
+    <script src="./Assets/script.js"></script>
     <input type="button" value="Click" onclick="test()">
 </body>
+
 </html>

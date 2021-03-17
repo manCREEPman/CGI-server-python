@@ -24,3 +24,13 @@ body{
     border: var(--title-border-chosen);
     background-color: var(--title-bg-color-chosen);
 }
+
+#selected-form{
+    margin: 15xp;
+    padding: 15px;
+    border: var(--title-border);
+}
+
+.input-margin{
+    margin-left: 10px;
+}
