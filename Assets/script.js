@@ -48,6 +48,24 @@ function initCompositionForm(){
     document.getElementById('selected-form').innerHTML = htmlStr 
 }
 
+function drawForm(){
+    let titleNumber = +pageInformation.chosenTitle[3]
+    switch(titleNumber){
+        case 1:
+            initMusicGenreForm()
+        break
+        case 2:
+            initArtistForm()
+        break
+        case 3:
+            initAlbumForm()
+        break
+        case 4:
+            initCompositionForm()
+        break
+    }
+}
+
 async function getQueryByTableName(table_name){
     let response = await fetch(`/cgi-bin/genre_insertion.py?table_name=${table_name}`)
     return response.json()
@@ -74,6 +92,33 @@ function displayTableData(dataObj){
         }
     }
     return false
+}
+
+function drawTable(){
+    let titleNumber = +pageInformation.chosenTitle[3]
+    let tableContainer = document.getElementById('selected-table-space')
+    tableContainer.innerHTML = ''
+    let tableName = ''
+    switch(titleNumber){
+        case 1:
+            tableName = 'Music_genre'
+        break
+        case 2:
+            tableName = 'Artist'
+        break
+        case 3:
+            tableName = 'Album'
+        break
+        case 4:
+            tableName = 'Composition'
+        break
+    }
+    getQueryByTableName(tableName).then(
+        (jsonData) => {
+            let table = displayTableData(jsonData)
+            if(table) tableContainer.append(table)
+        }
+    )
 }
 
 async function test(){
@@ -110,23 +155,28 @@ function titleClickEvent(event){
     currentChoose.classList.add('table-title-chosen')
     // currentChoose.style.backgroundColor = pageInformation.rootStyle.getPropertyValue('--title-bg-color-chosen')
     // currentChoose.style.backgroundColor = pageInformation.rootStyle.getPropertyValue('--title-border-chosen')
-    // вызывать get-запрос на отображение данных таблицы
+    // вызывать get-запрос на отображение данных таблицы 
+    // вызвать инициализацию формы для данных выбранной таблицы
+    drawForm()
+    drawTable()
 }
 
 function pageInit(){
     pageInformation.chosenTitle = 'nav1'
+    document.getElementById('nav1').classList.add('table-title-chosen')
     // подключить обработчики событий на каждый заголовок
     for(let i = 1; i <= 4; i++){
         document.getElementById('nav' + i).addEventListener('click', titleClickEvent)
     }
-    initMusicGenreForm()
-    getQueryByTableName('Artist').then(
-        (jsonOb) => {
-            console.log(jsonOb.status)
-            console.log(jsonOb.data)
-            console.log(displayTableData(jsonOb))
-        }
-    )
+    drawForm()
+    drawTable()
+    // getQueryByTableName('Artist').then(
+    //     (jsonOb) => {
+    //         console.log(jsonOb.status)
+    //         console.log(jsonOb.data)
+    //         console.log(displayTableData(jsonOb))
+    //     }
+    // )
     
     // тут вызвать get-запрос на отображение данных таблицы "Музыкальный жанр"
 }
