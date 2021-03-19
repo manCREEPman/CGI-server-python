@@ -5,44 +5,44 @@ const pageInformation = {
 }
 
 function initMusicGenreForm(){
-    let htmlStr = "<label>Название жанра<input class=\"input-margin\" type=\"text\" id=\"genre_name\"></label>" +
+    let htmlStr = "<div style=\"display: inline-block; width: 245px;\">Название жанра</div><input class=\"input-margin\" type=\"text\" id=\"genre_name\">" +
     "<br>" +
-    "<label>Описание жанра<input class=\"input-margin\" type=\"text-area\" id=\"genre_description\"></label>" +
+    "<div style=\"display: inline-block; width: 245px;\">Описание жанра</div><input class=\"input-margin\" type=\"text-area\" id=\"genre_description\">" +
     "<input id=\"send-button\" type=\"button\" value=\"Добавить\">"
     document.getElementById('selected-form').innerHTML = htmlStr
 }
 
 function initArtistForm(){
-    let htmlStr = "<label>Имя музыканта / коллектива<input class=\"input-margin\" type=\"text\" id=\"artist_name\"></label>" +
+    let htmlStr = "<div style=\"display: inline-block; width: 245px;\">Имя музыканта / коллектива</div><input class=\"input-margin\" type=\"text\" id=\"artist_name\">" +
     "<br>" +
-    "<label>Начало карьеры<input class=\"input-margin\" type=\"text\" id=\"start_career_date\"></label>" +
+    "<div style=\"display: inline-block; width: 245px;\">Начало карьеры</div><input class=\"input-margin\" type=\"text\" id=\"start_career_date\">" +
     "<input id=\"send-button\" type=\"button\" value=\"Добавить\">"
     document.getElementById('selected-form').innerHTML = htmlStr 
 }
 
 function initAlbumForm(){
-    let htmlStr = "<label>Имя музыканта / коллектива<input class=\"input-margin\" type=\"text\" id=\"artist_name\"></label>" +
+    let htmlStr = "<div style=\"display: inline-block; width: 245px;\">Имя музыканта / коллектива</div><input class=\"input-margin\" type=\"text\" id=\"artist_name\">" +
     "<br>" +
-    "<label>Название альбома<input class=\"input-margin\" type=\"text\" id=\"album_name\"></label>" +
+    "<div style=\"display: inline-block; width: 245px;\">Название альбома</div><input class=\"input-margin\" type=\"text\" id=\"album_name\">" +
     "<br>" +
-    "<label>Описание альбома<input class=\"input-margin\" type=\"text-area\" id=\"album_desc\"></label>" +
+    "<div style=\"display: inline-block; width: 245px;\">Описание альбома</div><input class=\"input-margin\" type=\"text-area\" id=\"album_desc\">" +
     "<br>" +
-    "<label>Дата выпуска<input class=\"input-margin\" type=\"text\" id=\"album_release_date\"></label>" +
+    "<div style=\"display: inline-block; width: 245px;\">Дата выпуска</div><input class=\"input-margin\" type=\"text\" id=\"album_release_date\">" +
     "<input id=\"send-button\" type=\"button\" value=\"Добавить\">"
     document.getElementById('selected-form').innerHTML = htmlStr 
 }
 
 function initCompositionForm(){
     let htmlStr = 
-    "<label>Название альбома<input class=\"input-margin\" type=\"text\" id=\"album_name\"></label>" +
+    "<div style=\"display: inline-block; width: 245px;\">Название альбома</div><input class=\"input-margin\" type=\"text\" id=\"album_name\">" +
     "<br>" +
-    "<label>Название жанра<input class=\"input-margin\" type=\"text\" id=\"genre_name\"></label>" +
+    "<div style=\"display: inline-block; width: 245px;\">Название жанра</div><input class=\"input-margin\" type=\"text\" id=\"genre_name\">" +
     "<br>" +
-    "<label>Название композиции<input class=\"input-margin\" type=\"text\" id=\"composition_title\"></label>" +
+    "<div style=\"display: inline-block; width: 245px;\">Название композиции</div><input class=\"input-margin\" type=\"text\" id=\"composition_title\">" +
     "<br>" +
-    "<label>Длительность<input class=\"input-margin\" type=\"text\" id=\"composition_duration\"></label>" +
+    "<div style=\"display: inline-block; width: 245px;\">Длительность</div><input class=\"input-margin\" type=\"text\" id=\"composition_duration\">" +
     "<br>" +
-    "<label>Текст<input class=\"input-margin\" type=\"text-area\" id=\"composition_text\"></label>" +
+    "<div style=\"display: inline-block; width: 245px;\">Текст</div><input class=\"input-margin\" type=\"text-area\" id=\"composition_text\">" +
     "<input id=\"send-button\" type=\"button\" value=\"Добавить\">"
     document.getElementById('selected-form').innerHTML = htmlStr 
 }
@@ -71,17 +71,39 @@ async function getQueryByTableName(table_name){
     return response.json()
 }
 
+function generateTableHeaders(){
+    let headersRow = document.createElement('tr')
+    switch(+pageInformation.chosenTitle[3]){
+        case 1:
+            headersRow.innerHTML = "<th>ID</th><th>Название жанра</th><th>Описание жанра</th>"
+        break
+        case 2:
+            headersRow.innerHTML = "<th>ID</th><th>Имя исполнителя / коллектива</th><th>Дата создания</th>"
+        break
+        case 3:
+            headersRow.innerHTML = "<th>ID</th><th>Имя исполнителя / коллектива</th><th>Название альбома</th><th>Описание альбома</th><th>Дата выпуска</th>"
+        break
+        case 4:
+            headersRow.innerHTML = "<th>ID</th><th>Имя исполнителя / коллектива</th><th>Название альбома</th><th>Название композиции</th><th>Длительность</th><th>Длительность</th><th>Жанр</th>"
+        break
+    }
+    return headersRow
+}
+
 function displayTableData(dataObj){
     if(!dataObj.status.includes('Error')){
         if(dataObj.data.length != 0){
             let table = document.createElement('table')
             table.id = 'selected-table'
+            table.border = 1
+            table.width = '100%'
+            table.append(generateTableHeaders())
             let dataJSON = dataObj.data
             for(let i = 0; i < dataJSON.length; i++){
                 let tableRow = document.createElement('tr')
                 let rowData = dataJSON[i]
                 for(let j = 0; j < rowData.length; j++){
-                    let rowCell = document.createElement('th')
+                    let rowCell = document.createElement('td')
                     rowCell.innerHTML = rowData[j]
                     tableRow.append(rowCell)
                 }
@@ -134,12 +156,6 @@ function insertData(){
                 formData.artist_name = document.getElementById('artist_name').value
             }
             else return false
-            for(let i = 1; i < inputs.length; i++){
-                if(inputs[i].value != '' && inputs[i].type != 'button'){
-                    formData.columns.push(inputs[i].id)
-                    formData.values.push(inputs[i].value)
-                }
-            }
         break
         case 4:
             if(document.getElementById('genre_name').value != ''){
@@ -150,21 +166,13 @@ function insertData(){
                 formData.album_name = document.getElementById('album_name').value
             }
             else return false
-            for(let i = 2; i < inputs.length; i++){
-                if(inputs[i].value != '' && inputs[i].type != 'button'){
-                    formData.columns.push(inputs[i].id)
-                    formData.values.push(inputs[i].value)
-                }
-            }
         break
-        default:
-            for(let i = 0; i < inputs.length; i++){
-                if(inputs[i].value != '' && inputs[i].type != 'button'){
-                    formData.columns.push(inputs[i].id)
-                    formData.values.push(inputs[i].value)
-                }
-            }
-        break
+    }
+    for(let i = titleNumber - 2 <= 0 ? 0 : titleNumber - 2; i < inputs.length; i++){
+        if(inputs[i].value != '' && inputs[i].type != 'button'){
+            formData.columns.push(inputs[i].id)
+            formData.values.push(inputs[i].value)
+        }
     }
     return formData
 }
@@ -182,51 +190,38 @@ async function postQueryByTableName(formData){
     return response.json()
 }
 
+function appendOrCreateSelectedTable(newDataRow){
+    let selectedTable = document.getElementById('selected-table')
+    if(selectedTable) selectedTable.append(newDataRow)
+    else {
+        let selectedTable = document.createElement('table')
+        selectedTable.id = 'selected-table'
+        selectedTable.border = 1
+        selectedTable.width = '100%'
+        selectedTable.append(generateTableHeaders())
+        selectedTable.append(newDataRow)
+        document.getElementById('selected-table-space').append(selectedTable)
+    }
+}
+
 function sendButtonHandler(){
     let formData = insertData()
-    console.log(formData)
     if(formData){
         postQueryByTableName(formData).then(
             (responseJSON) => {
-                console.log(responseJSON)
                 if(!responseJSON.status.includes('Error')){
                     let newDataRow = document.createElement('tr')
                     let newData = responseJSON.new_data
                     for(let i = 0; i < newData.length; i++){
-                        let newCol = document.createElement('th')
+                        let newCol = document.createElement('td')
                         newCol.innerHTML = newData[i]
                         newDataRow.append(newCol)
                     }
-                    document.getElementById('selected-table').append(newDataRow)
+                    appendOrCreateSelectedTable(newDataRow)
                 }
             }
         )
     }
-}
-
-async function test(){
-    // let response = await fetch('/cgi-bin/genre_insertion.py?table_name=Artist')
-    // const data = {
-    //     table_name: 'Artist',
-    //     columns: [1, '2', 3],
-    //     data: ['asdf', 12, 'typ']
-    // }
-    // let response = await fetch('/cgi-bin/genre_insertion.py',
-    // {
-    //     method: 'POST',
-    //     headers: {
-    //         'Content-Type': 'application/json'
-    //     },
-    //     body: JSON.stringify(data),
-    // })
-    // let response = await fetch('/cgi-bin/genre_insertion.py?table_name=Composition')
-    // console.log(response)
-    // console.log(response.text())
-    // console.log(response.status)
-    // console.log(response.json)
-    // let root = document.documentElement
-    // root.style.setProperty('--title-bg-color', '#727262')
-    console.log('penis')
 }
 
 function titleClickEvent(event){
@@ -243,22 +238,12 @@ function titleClickEvent(event){
 function pageInit(){
     pageInformation.chosenTitle = 'nav1'
     document.getElementById('nav1').classList.add('table-title-chosen')
-    // подключить обработчики событий на каждый заголовок
     for(let i = 1; i <= 4; i++){
         document.getElementById('nav' + i).addEventListener('click', titleClickEvent)
     }
     drawForm()
     drawTable()
     document.getElementById('send-button').addEventListener('click', sendButtonHandler)
-    // getQueryByTableName('Artist').then(
-    //     (jsonOb) => {
-    //         console.log(jsonOb.status)
-    //         console.log(jsonOb.data)
-    //         console.log(displayTableData(jsonOb))
-    //     }
-    // )
-    
-    // тут вызвать get-запрос на отображение данных таблицы "Музыкальный жанр"
 }
 
 pageInit()

@@ -1,3 +1,11 @@
+*,
+*:after,
+*:before {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
 :root{
     --title-bg-color: #727262;
     --title-bg-color-chosen: #d3d3ba;
@@ -12,6 +20,7 @@ body{
 .table-title{
     display: inline-block;
     background-color: var(--title-bg-color);
+    user-select: none;
     padding: 15px 10px;
     border: var(--title-border);
 }
@@ -25,12 +34,22 @@ body{
     background-color: var(--title-bg-color-chosen);
 }
 
-#selected-form{
+.selected-form-style{
     margin: 15xp;
     padding: 15px;
-    border: var(--title-border);
+    border: var(--title-border-chosen);
+    background-color: var(--title-bg-color-chosen);
+}
+
+.table-properties{
+    border: 1;
+    width: 100%;
 }
 
 .input-margin{
     margin-left: 10px;
+}
+
+.form-labels{
+    width: 245px;
 }
