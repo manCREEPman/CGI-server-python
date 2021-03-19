@@ -5,45 +5,45 @@ const pageInformation = {
 }
 
 function initMusicGenreForm(){
-    let htmlStr = "<label>Название жанра<input class=\"input-margin\" type=\"text\" name=\"genre_name\"></label>" +
+    let htmlStr = "<label>Название жанра<input class=\"input-margin\" type=\"text\" id=\"genre_name\"></label>" +
     "<br>" +
-    "<label>Описание жанра<input class=\"input-margin\" type=\"text-area\" name=\"genre_description\"></label>" +
+    "<label>Описание жанра<input class=\"input-margin\" type=\"text-area\" id=\"genre_description\"></label>" +
     "<input id=\"send-button\" type=\"button\" value=\"Добавить\">"
     document.getElementById('selected-form').innerHTML = htmlStr
 }
 
 function initArtistForm(){
-    let htmlStr = "<label>Имя музыканта / коллектива<input class=\"input-margin\" type=\"text\" name=\"artist_name\"></label>" +
+    let htmlStr = "<label>Имя музыканта / коллектива<input class=\"input-margin\" type=\"text\" id=\"artist_name\"></label>" +
     "<br>" +
-    "<label>Начало карьеры<input class=\"input-margin\" type=\"text\" name=\"start_career_date\"></label>" +
+    "<label>Начало карьеры<input class=\"input-margin\" type=\"text\" id=\"start_career_date\"></label>" +
     "<input id=\"send-button\" type=\"button\" value=\"Добавить\">"
     document.getElementById('selected-form').innerHTML = htmlStr 
 }
 
 function initAlbumForm(){
-    let htmlStr = "<label>Имя музыканта / коллектива<input class=\"input-margin\" type=\"text\" name=\"artist_name\"></label>" +
+    let htmlStr = "<label>Имя музыканта / коллектива<input class=\"input-margin\" type=\"text\" id=\"artist_name\"></label>" +
     "<br>" +
-    "<label>Название альбома<input class=\"input-margin\" type=\"text\" name=\"album_name\"></label>" +
+    "<label>Название альбома<input class=\"input-margin\" type=\"text\" id=\"album_name\"></label>" +
     "<br>" +
-    "<label>Описание альбома<input class=\"input-margin\" type=\"text-area\" name=\"album_desc\"></label>" +
+    "<label>Описание альбома<input class=\"input-margin\" type=\"text-area\" id=\"album_desc\"></label>" +
     "<br>" +
-    "<label>Дата выпуска<input class=\"input-margin\" type=\"text\" name=\"album_release_date\"></label>" +
+    "<label>Дата выпуска<input class=\"input-margin\" type=\"text\" id=\"album_release_date\"></label>" +
     "<input id=\"send-button\" type=\"button\" value=\"Добавить\">"
     document.getElementById('selected-form').innerHTML = htmlStr 
 }
 
 function initCompositionForm(){
-    let htmlStr = "<label>Имя музыканта / коллектива<input class=\"input-margin\" type=\"text\" name=\"artist_name\"></label>" +
+    let htmlStr = "<label>Имя музыканта / коллектива<input class=\"input-margin\" type=\"text\" id=\"artist_name\"></label>" +
     "<br>" +
-    "<label>Название альбома<input class=\"input-margin\" type=\"text\" name=\"album_name\"></label>" +
+    "<label>Название альбома<input class=\"input-margin\" type=\"text\" id=\"album_name\"></label>" +
     "<br>" +
-    "<label>Название композиции<input class=\"input-margin\" type=\"text\" name=\"composition_name\"></label>" +
+    "<label>Название композиции<input class=\"input-margin\" type=\"text\" id=\"composition_name\"></label>" +
     "<br>" +
-    "<label>Название жанра<input class=\"input-margin\" type=\"text\" name=\"genre_name\"></label>" +
+    "<label>Название жанра<input class=\"input-margin\" type=\"text\" id=\"genre_name\"></label>" +
     "<br>" +
-    "<label>Длительность<input class=\"input-margin\" type=\"text\" name=\"composition_duration\"></label>" +
+    "<label>Длительность<input class=\"input-margin\" type=\"text\" id=\"composition_duration\"></label>" +
     "<br>" +
-    "<label>Текст<input class=\"input-margin\" type=\"text-area\" name=\"composition-text\"></label>" +
+    "<label>Текст<input class=\"input-margin\" type=\"text-area\" id=\"composition_text\"></label>" +
     "<input id=\"send-button\" type=\"button\" value=\"Добавить\">"
     document.getElementById('selected-form').innerHTML = htmlStr 
 }
@@ -67,9 +67,9 @@ function drawForm(){
 }
 
 async function getQueryByTableName(table_name){
-    let response = await fetch(`/cgi-bin/genre_insertion.py?table_name=${table_name}`)
+    let url = `./cgi-bin/genre_insertion.py?table_name=${table_name}`
+    let response = await fetch(url)
     return response.json()
-
 }
 
 function displayTableData(dataObj){
@@ -121,6 +121,84 @@ function drawTable(){
     )
 }
 
+function insertData(){
+    let titleNumber = +pageInformation.chosenTitle[3]
+    let formData = {columns: [], values: []}
+    let inputs = document.getElementById('selected-form').getElementsByTagName('input')
+    switch(titleNumber){
+        case 3:
+            if(document.getElementById('artist_name').value != ''){
+                formData.artist_name = document.getElementById('artist_name').value
+            }
+            else return false
+            for(let i = 1; i < inputs.length; i++){
+                if(inputs[i].value != ''){
+                    formData.columns.append(inputs[i].id)
+                    formData.values.append(inputs[i].value)
+                }
+            }
+        break
+        case 4:
+            if(document.getElementById('artist_name').value != ''){
+                formData.artist_name = document.getElementById('artist_name').value
+            }
+            else return false
+            if(document.getElementById('album_name').value != ''){
+                formData.album_name = document.getElementById('album_name').value
+            }
+            else return false
+            for(let i = 2; i < inputs.length; i++){
+                if(inputs[i].value != ''){
+                    formData.columns.append(inputs[i].id)
+                    formData.values.append(inputs[i].value)
+                }
+            }
+        break
+        default:
+            for(let i = 0; i < inputs.length; i++){
+                if(inputs[i].value != ''){
+                    formData.columns.append(inputs[i].id)
+                    formData.values.append(inputs[i].value)
+                }
+            }
+        break
+    }
+    return formData
+}
+
+async function postQueryByTableName(formData){
+    let response = await fetch('/cgi-bin/genre_insertion.py',
+        {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData),
+        }
+    )
+    return response.json()
+}
+
+function sendButtonHandler(){
+    let formData = insertData()
+    if(formData){
+        postQueryByTableName(formData).then(
+            (responseJSON) => {
+                if(!responseJSON.status.includes('Error')){
+                    let newDataRow = document.createElement('tr')
+                    let newData = responseJSON.new_data
+                    for(let i = 0; i < newData.length; i++){
+                        let newCol = document.createElement('th')
+                        newCol.innerHTML = newData[i]
+                        newDataRow.append(newCol)
+                    }
+                    document.getElementById('selected-table').append(newDataRow)
+                }
+            }
+        )
+    }
+}
+
 async function test(){
     // let response = await fetch('/cgi-bin/genre_insertion.py?table_name=Artist')
     // const data = {
@@ -141,24 +219,20 @@ async function test(){
     // console.log(response.text())
     // console.log(response.status)
     // console.log(response.json)
-    let root = document.documentElement
-    root.style.setProperty('--title-bg-color', '#727262')
+    // let root = document.documentElement
+    // root.style.setProperty('--title-bg-color', '#727262')
+    console.log('penis')
 }
 
 function titleClickEvent(event){
     let prevChoose = document.getElementById(pageInformation.chosenTitle)
     prevChoose.classList.remove('table-title-chosen')
-    // prevChoose.style.backgroundColor = pageInformation.rootStyle.getPropertyValue('--title-bg-color')
-    // prevChoose.style.border = pageInformation.rootStyle.getPropertyValue('--title-border')
     pageInformation.chosenTitle = event.currentTarget.id
     let currentChoose = document.getElementById(pageInformation.chosenTitle)
     currentChoose.classList.add('table-title-chosen')
-    // currentChoose.style.backgroundColor = pageInformation.rootStyle.getPropertyValue('--title-bg-color-chosen')
-    // currentChoose.style.backgroundColor = pageInformation.rootStyle.getPropertyValue('--title-border-chosen')
-    // вызывать get-запрос на отображение данных таблицы 
-    // вызвать инициализацию формы для данных выбранной таблицы
     drawForm()
     drawTable()
+    document.getElementById('send-button').addEventListener('click', sendButtonHandler)
 }
 
 function pageInit(){
@@ -170,6 +244,7 @@ function pageInit(){
     }
     drawForm()
     drawTable()
+    document.getElementById('send-button').addEventListener('click', test)
     // getQueryByTableName('Artist').then(
     //     (jsonOb) => {
     //         console.log(jsonOb.status)
