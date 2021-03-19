@@ -33,13 +33,12 @@ function initAlbumForm(){
 }
 
 function initCompositionForm(){
-    let htmlStr = "<label>Имя музыканта / коллектива<input class=\"input-margin\" type=\"text\" id=\"artist_name\"></label>" +
-    "<br>" +
+    let htmlStr = 
     "<label>Название альбома<input class=\"input-margin\" type=\"text\" id=\"album_name\"></label>" +
     "<br>" +
-    "<label>Название композиции<input class=\"input-margin\" type=\"text\" id=\"composition_name\"></label>" +
-    "<br>" +
     "<label>Название жанра<input class=\"input-margin\" type=\"text\" id=\"genre_name\"></label>" +
+    "<br>" +
+    "<label>Название композиции<input class=\"input-margin\" type=\"text\" id=\"composition_title\"></label>" +
     "<br>" +
     "<label>Длительность<input class=\"input-margin\" type=\"text\" id=\"composition_duration\"></label>" +
     "<br>" +
@@ -94,10 +93,8 @@ function displayTableData(dataObj){
     return false
 }
 
-function drawTable(){
+function getTableNameBySelectedTitle(){
     let titleNumber = +pageInformation.chosenTitle[3]
-    let tableContainer = document.getElementById('selected-table-space')
-    tableContainer.innerHTML = ''
     let tableName = ''
     switch(titleNumber){
         case 1:
@@ -113,7 +110,13 @@ function drawTable(){
             tableName = 'Composition'
         break
     }
-    getQueryByTableName(tableName).then(
+    return tableName
+}
+
+function drawTable(){
+    let tableContainer = document.getElementById('selected-table-space')
+    tableContainer.innerHTML = ''
+    getQueryByTableName(getTableNameBySelectedTitle()).then(
         (jsonData) => {
             let table = displayTableData(jsonData)
             if(table) tableContainer.append(table)
@@ -123,7 +126,7 @@ function drawTable(){
 
 function insertData(){
     let titleNumber = +pageInformation.chosenTitle[3]
-    let formData = {columns: [], values: []}
+    let formData = {columns: [], values: [], table_name: getTableNameBySelectedTitle()}
     let inputs = document.getElementById('selected-form').getElementsByTagName('input')
     switch(titleNumber){
         case 3:
@@ -132,15 +135,15 @@ function insertData(){
             }
             else return false
             for(let i = 1; i < inputs.length; i++){
-                if(inputs[i].value != ''){
-                    formData.columns.append(inputs[i].id)
-                    formData.values.append(inputs[i].value)
+                if(inputs[i].value != '' && inputs[i].type != 'button'){
+                    formData.columns.push(inputs[i].id)
+                    formData.values.push(inputs[i].value)
                 }
             }
         break
         case 4:
-            if(document.getElementById('artist_name').value != ''){
-                formData.artist_name = document.getElementById('artist_name').value
+            if(document.getElementById('genre_name').value != ''){
+                formData.genre_name = document.getElementById('genre_name').value
             }
             else return false
             if(document.getElementById('album_name').value != ''){
@@ -148,17 +151,17 @@ function insertData(){
             }
             else return false
             for(let i = 2; i < inputs.length; i++){
-                if(inputs[i].value != ''){
-                    formData.columns.append(inputs[i].id)
-                    formData.values.append(inputs[i].value)
+                if(inputs[i].value != '' && inputs[i].type != 'button'){
+                    formData.columns.push(inputs[i].id)
+                    formData.values.push(inputs[i].value)
                 }
             }
         break
         default:
             for(let i = 0; i < inputs.length; i++){
-                if(inputs[i].value != ''){
-                    formData.columns.append(inputs[i].id)
-                    formData.values.append(inputs[i].value)
+                if(inputs[i].value != '' && inputs[i].type != 'button'){
+                    formData.columns.push(inputs[i].id)
+                    formData.values.push(inputs[i].value)
                 }
             }
         break
@@ -181,9 +184,11 @@ async function postQueryByTableName(formData){
 
 function sendButtonHandler(){
     let formData = insertData()
+    console.log(formData)
     if(formData){
         postQueryByTableName(formData).then(
             (responseJSON) => {
+                console.log(responseJSON)
                 if(!responseJSON.status.includes('Error')){
                     let newDataRow = document.createElement('tr')
                     let newData = responseJSON.new_data
@@ -244,7 +249,7 @@ function pageInit(){
     }
     drawForm()
     drawTable()
-    document.getElementById('send-button').addEventListener('click', test)
+    document.getElementById('send-button').addEventListener('click', sendButtonHandler)
     // getQueryByTableName('Artist').then(
     //     (jsonOb) => {
     //         console.log(jsonOb.status)
