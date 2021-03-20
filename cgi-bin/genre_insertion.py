@@ -141,34 +141,11 @@ def post_query_handler(cursor, connection):
 
 real_connection = sqlite3.connect('./cgi-bin/music_genres.db')
 connection_cursor = real_connection.cursor()
-# connection_cursor.execute('SELECT artist_id from Artist WHERE artist_name = \'{}\';'.format('debil'))
-# print(connection_cursor.fetchone())
-data1 = {
-    'table_name': 'Album',
-    'columns': ['album_name', 'album_desc', 'album_release_date'],
-    'values': ['Pashkovka', 'Ssanina', '13.02.2021'],
-    'artist_name': 'Local Memes'
-}
-data2 = {
-    'table_name': 'Music_genre',
-    'columns': ['genre_name', 'genre_description'],
-    'values': ['Pash-rap', 'Ssanina'],
-    'artist_name': 'Local Memes'
-}
-# table_name = 'Album'
-# columns = ['album_name', 'album_desc', 'album_release_date', 'artist_name']
-# values = ['Pashkovka', 'Ssanina', '13.02.2021', 'Local Memes']
-# print(data_insertion(connection_cursor, table_name, columns, values))
-# connection_cursor.execute('SELECT * FROM Artist WHERE artist_name = \'Local Memes\';')
-# print(connection_cursor.fetchone())
-# print(data_insertion(connection_cursor, data1))
-# print(last_data_inserted(connection_cursor, data1))
 
 if os.environ['REQUEST_METHOD'] == 'GET':
     print(get_query_handler(connection_cursor))
 else:
     print(post_query_handler(connection_cursor, real_connection))
 
-# print(get_query_handler(connection_cursor))
 real_connection.commit()
 real_connection.close()
